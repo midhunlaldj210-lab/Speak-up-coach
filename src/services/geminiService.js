@@ -102,6 +102,11 @@ export async function getCoachFeedback(taskPrompt, userSpeech) {
   return parseResponse(text);
 }
 
+// Alias used by PracticeScreen
+export async function getAIFeedback(taskPrompt, userSpeech) {
+  return await getCoachFeedback(taskPrompt, userSpeech);
+}
+
 // ─── Sentence Structure ────────────────────────────────────────
 
 export async function getSentenceFeedback(words, userOrder, correctOrder) {
@@ -171,6 +176,40 @@ In 2-3 sentences: Was their definition correct? Give the proper definition and a
     systemPrompt: 'You are a vocabulary coach. Be clear, encouraging and educational.'
   });
 }
+
+export async function getWordOfTheDay() {
+  const prompt = `Give me one interesting English word that is useful for everyday conversation or professional settings.
+
+Return ONLY this JSON (no markdown, no extra text):
+{"word": "example", "pronunciation": "/ɪɡˈzɑːmpəl/", "partOfSpeech": "noun", "definition": "A thing characteristic of its kind or illustrating a general rule.", "exampleSentence": "This painting is a perfect example of his early style.", "synonyms": ["instance", "case", "illustration"]}`;
+
+  const text = await callAI(prompt, {
+    temperature: 0.9,
+    maxTokens: 300,
+    systemPrompt: 'You are a vocabulary teacher. Return only valid JSON.'
+  });
+  try {
+    return JSON.parse(text.replace(/```json/gi, '').replace(/```/g, '').trim());
+  } catch {
+    return { word: 'Eloquent', pronunciation: '/ˈɛləkwənt/', partOfSpeech: 'adjective', definition: 'Fluent or persuasive in speaking or writing.', exampleSentence: 'She gave an eloquent speech that moved the audience.', synonyms: ['articulate', 'fluent', 'expressive'] };
+  }
+}
+
+export async function getVocabMatchFeedback(word, userAnswer, correct) {
+  const prompt = `Vocabulary exercise — word: "${word}"
+Correct answer: "${correct}"
+Student answered: "${userAnswer}"
+${userAnswer === correct ? 'They got it right!' : 'They got it wrong.'}
+
+Give 1-2 sentences of feedback. If wrong, explain the correct meaning simply. Be encouraging.`;
+
+  return await callAI(prompt, {
+    temperature: 0.5,
+    maxTokens: 200,
+    systemPrompt: 'You are a vocabulary coach. Be concise and encouraging.'
+  });
+}
+
 
 // ─── Pronunciation ─────────────────────────────────────────────
 
