@@ -141,12 +141,17 @@ function QuizSection({ module, onPassed }) {
   const [submitted, setSubmitted] = useState(false);
   const [score, setScore] = useState(0);
 
+  const [error, setError] = useState(null);
+
   const loadQuiz = async () => {
     setLoading(true);
+    setError(null);
     try {
       const q = await getMasterclassQuiz(module.quizTopic);
       setQuestions(q);
-    } catch { /* fallback handled in service */ }
+    } catch (err) { 
+      setError('Failed to generate quiz. The AI might be busy, please try again.');
+    }
     finally { setLoading(false); }
   };
 
@@ -169,6 +174,13 @@ function QuizSection({ module, onPassed }) {
       <div className="mc-quiz-card">
         <div className="mc-quiz-title">📝 Module {module.id} Quiz</div>
         <p style={{ color: '#8892A4', fontSize: '0.88rem', marginBottom: '16px' }}>Test your understanding of this module with 5 AI-generated questions.</p>
+        
+        {error && (
+          <div style={{ color: '#F87171', background: 'rgba(248,113,113,0.1)', padding: '12px', borderRadius: '8px', marginBottom: '16px', fontSize: '0.88rem', border: '1px solid rgba(248,113,113,0.3)' }}>
+            ⚠️ {error}
+          </div>
+        )}
+
         <button className="mc-btn-gold" onClick={loadQuiz} style={{ fontSize: '0.85rem', padding: '12px 24px' }}>
           Generate Quiz
         </button>
