@@ -150,7 +150,8 @@ function QuizSection({ module, onPassed }) {
       const q = await getMasterclassQuiz(module.quizTopic);
       setQuestions(q);
     } catch (err) { 
-      setError('Failed to generate quiz. The AI might be busy, please try again.');
+      console.error(err);
+      setError(err.message || 'Failed to generate quiz.');
     }
     finally { setLoading(false); }
   };
