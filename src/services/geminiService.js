@@ -50,7 +50,7 @@ function parseGeminiResponse(text) {
   return sections;
 }
 
-async function callGemini(prompt, customConfig = {}) {
+async function callGemini(prompt, customConfig = {}, retries = 3, delayMs = 2000) {
   if (!GEMINI_API_KEY) {
     throw new Error('Gemini API key is not configured. Please add REACT_APP_GEMINI_API_KEY to your .env file.');
   }
@@ -70,28 +70,41 @@ async function callGemini(prompt, customConfig = {}) {
     ],
   };
 
-  const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(requestBody),
-  });
+  try {
+    const response = await fetch(`${GEMINI_API_URL}?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(requestBody),
+    });
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    if (response.status === 400) throw new Error('Invalid request to AI. Please try again.');
-    if (response.status === 403) throw new Error('Invalid Gemini API key. Please check your configuration.');
-    if (response.status === 429) throw new Error('AI rate limit reached. Please wait a moment and try again.');
-    throw new Error(errorData?.error?.message || 'AI is unavailable right now. Please try again.');
+    if (!response.ok) {
+      if (response.status === 429 && retries > 0) {
+        // Rate limit hit, wait and retry
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+        return callGemini(prompt, customConfig, retries - 1, delayMs * 2);
+      }
+      const errorData = await response.json().catch(() => ({}));
+      if (response.status === 400) throw new Error('Invalid request to AI. Please try again.');
+      if (response.status === 403) throw new Error('Invalid Gemini API key. Please check your configuration.');
+      if (response.status === 429) throw new Error('AI rate limit reached. Please wait a moment and try again.');
+      throw new Error(errorData?.error?.message || 'AI is unavailable right now. Please try again.');
+    }
+
+    const data = await response.json();
+    if (!data.candidates || data.candidates.length === 0) throw new Error('No response from AI.');
+    const candidate = data.candidates[0];
+    if (candidate.finishReason === 'SAFETY') throw new Error('Your message was flagged. Please rephrase and try again.');
+    const text = candidate.content?.parts?.[0]?.text;
+    if (!text) throw new Error('AI returned an empty response.');
+    
+    return text;
+  } catch (error) {
+    if (error.message === 'Failed to fetch' && retries > 0) {
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+      return callGemini(prompt, customConfig, retries - 1, delayMs * 2);
+    }
+    throw error;
   }
-
-  const data = await response.json();
-  if (!data.candidates || data.candidates.length === 0) throw new Error('No response from AI.');
-  const candidate = data.candidates[0];
-  if (candidate.finishReason === 'SAFETY') throw new Error('Your message was flagged. Please rephrase and try again.');
-  const text = candidate.content?.parts?.[0]?.text;
-  if (!text) throw new Error('AI returned an empty response.');
-  
-  return text;
 }
 
 /**
