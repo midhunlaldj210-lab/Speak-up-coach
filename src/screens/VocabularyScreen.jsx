@@ -252,7 +252,6 @@ function WordOfDay({ launchConfetti }) {
   const [wod, setWod]           = useState(null);
   const [loading, setLoading]   = useState(true);
   const [level, setLevel]       = useState('Intermediate');
-  const [challenge, setChallenge] = useState('');
   const [feedback, setFeedback] = useState('');
   const [fbLoading, setFbLoading] = useState(false);
   const { speak }               = useSpeechSynthesis();
@@ -261,7 +260,6 @@ function WordOfDay({ launchConfetti }) {
   const loadWord = async (lv = level) => {
     setLoading(true);
     setWod(null);
-    setChallenge('');
     setFeedback('');
     resetTranscript();
     try {

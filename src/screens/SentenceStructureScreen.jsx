@@ -93,7 +93,7 @@ export default function SentenceStructureScreen() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
             <span style={{ fontSize: '28px' }}>🔵</span>
             <h1 style={{ fontSize: '1.5rem' }}>Sentence Structure</h1>
-            <span style={{ marginLeft: 'auto' }} className="score-badge" style={{ background: 'rgba(10,132,255,0.1)', border: '1px solid rgba(10,132,255,0.25)', color: 'var(--color-accent-blue)', borderRadius: 'var(--radius-full)', padding: '4px 14px', fontSize: '0.85rem', fontWeight: 700 }}>
+            <span className="score-badge" style={{ marginLeft: 'auto', background: 'rgba(10,132,255,0.1)', border: '1px solid rgba(10,132,255,0.25)', color: 'var(--color-accent-blue)', borderRadius: 'var(--radius-full)', padding: '4px 14px', fontSize: '0.85rem', fontWeight: 700 }}>
               ✅ {score.correct}/{score.total}
             </span>
           </div>
