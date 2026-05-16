@@ -10,6 +10,9 @@ import SentenceStructureScreen from './screens/SentenceStructureScreen';
 import GrammarTrainerScreen from './screens/GrammarTrainerScreen';
 import VocabularyScreen from './screens/VocabularyScreen';
 import PronunciationScreen from './screens/PronunciationScreen';
+import MasterclassScreen from './screens/MasterclassScreen';
+import ModuleScreen from './screens/ModuleScreen';
+import CertificateScreen from './screens/CertificateScreen';
 import { AnimatePresence } from 'framer-motion';
 
 export default function App() {
@@ -64,6 +67,11 @@ export default function App() {
               path="/learn/pronunciation"
               element={<ProtectedRoute><PronunciationScreen /></ProtectedRoute>}
             />
+
+            {/* Masterclass Routes */}
+            <Route path="/masterclass" element={<ProtectedRoute><MasterclassScreen /></ProtectedRoute>} />
+            <Route path="/masterclass/module/:id" element={<ProtectedRoute><ModuleScreen /></ProtectedRoute>} />
+            <Route path="/masterclass/certificate" element={<ProtectedRoute><CertificateScreen /></ProtectedRoute>} />
 
             {/* Fallback */}
             <Route path="/" element={<Navigate to="/dashboard" replace />} />

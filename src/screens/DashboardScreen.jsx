@@ -157,6 +157,10 @@ export default function DashboardScreen() {
             <button className={`dash-tab ${mainTab === 'practice' ? 'active' : ''}`} onClick={() => setMainTab('practice')}>
               🗣️ Practice Speaking
             </button>
+            <button className="dash-tab" onClick={() => navigate('/masterclass')}
+              style={{ background: 'rgba(212,175,55,0.08)', borderColor: 'rgba(212,175,55,0.25)', color: '#D4AF37' }}>
+              🏆 Masterclass
+            </button>
             <button className="dash-tab" onClick={() => navigate('/progress')}>
               📈 My Progress
             </button>

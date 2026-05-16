@@ -193,3 +193,39 @@ export async function buildSessionData(taskTitle, taskId, exchanges, corrections
     ).length,
   };
 }
+
+// ─── MASTERCLASS FUNCTIONS ───────────────────────────────────────────
+
+export async function getMasterclassExerciseQuestion(exercisePrompt) {
+  const prompt = `You are a masterclass coach for the "Speak with Confidence & Clarity" course.\n${exercisePrompt}\nAsk ONE clear, engaging question or give ONE specific task. Keep it under 4 lines. Do not give feedback yet — just the question/task.`;
+  return await callGemini(prompt, { temperature: 0.8 });
+}
+
+export async function getMasterclassExerciseFeedback(exercisePrompt, studentResponse) {
+  const prompt = `You are a masterclass coach for the "Speak with Confidence & Clarity" course.\nExercise context: ${exercisePrompt}\nStudent's response: "${studentResponse}"\nGive warm, specific, actionable feedback. Be encouraging but honest. Under 6 lines. Start directly with the feedback.`;
+  return await callGemini(prompt, { temperature: 0.7 });
+}
+
+export async function getMasterclassQuiz(quizTopic) {
+  const prompt = `Generate exactly 5 multiple choice quiz questions based on: ${quizTopic}\n\nReturn ONLY a valid JSON array, no markdown:\n[\n  {\n    "question": "Question text?",\n    "options": ["A", "B", "C", "D"],\n    "correct": 0,\n    "explanation": "Why this is correct."\n  }\n]\nRules: correct is the INDEX (0-3). Make wrong options plausible.`;
+  const text = await callGemini(prompt, { temperature: 0.5 });
+  try {
+    return JSON.parse(text.replace(/```json/gi, '').replace(/```/g, '').trim());
+  } catch (e) {
+    throw new Error('Failed to generate quiz. Please try again.');
+  }
+}
+
+export async function evaluateCapstone(speechText) {
+  const prompt = `You are evaluating a student's final capstone speech for a communication masterclass.\n\nSpeech: "${speechText}"\n\nScore each criterion out of 20:\n1. Opening Strength\n2. Structure and Flow\n3. Personal Storytelling\n4. Vocabulary and Word Choice\n5. Closing Impact\n\nReturn ONLY this JSON, no markdown:\n{"scores":{"opening":0,"structure":0,"storytelling":0,"vocabulary":0,"closing":0},"total":0,"feedback":{"opening":"","structure":"","storytelling":"","vocabulary":"","closing":""},"overallComment":"","certificateEligible":false}`;
+  const text = await callGemini(prompt, { temperature: 0.4 });
+  try {
+    const result = JSON.parse(text.replace(/```json/gi, '').replace(/```/g, '').trim());
+    result.total = Object.values(result.scores).reduce((a, b) => a + b, 0);
+    result.certificateEligible = result.total >= 70;
+    return result;
+  } catch (e) {
+    throw new Error('Failed to evaluate speech. Please try again.');
+  }
+}
+
